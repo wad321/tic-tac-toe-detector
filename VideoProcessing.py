@@ -1,15 +1,14 @@
 from multiprocessing import Process, Lock,  Value, Array
 import numpy as np
-from sklearn import svm, datasets, preprocessing, feature_extraction
+from sklearn import svm, preprocessing, feature_extraction
+from sklearn.externals import joblib
 import cv2
 import glob
-from skimage import io
 import scipy.misc
 from PIL import Image
 
 Scaler = preprocessing.StandardScaler()
 size = 128, 128
-__all__ = [Process, Lock,  Value, Array, np, svm, datasets, preprocessing, feature_extraction, cv2, io, glob, scipy.misc]
 
 
 def get_frame(capture):
@@ -21,8 +20,8 @@ def get_frame(capture):
 
 
 def detect_on_frame(frame, machine):
-    # TODO
-    return frame
+    img_to_predict = process_image(frame)
+    return machine.predict(img_to_predict)
 
 
 def change_frame(frame):
@@ -49,17 +48,17 @@ def open_and_process_image(filename):
     return process_image(image_to_process)
 
 
-def initialize_svm(kernel, gamma):
+def initialize_svm(kernel, gamma, cache):
     images = []
     features = []
-    svc = svm.SVC(kernel=kernel, gamma=gamma)
+    svc = svm.SVC(kernel=kernel, gamma=gamma, cache_size=cache)
     for file in glob.glob("plearn/*.jpg"):
         images.append(open_and_process_image(file))
-        features.append(1)
+        features.append('yes')
 
     for file in glob.glob("pnotlearn/*.jpg"):
         images.append(open_and_process_image(file))
-        features.append(0)
+        features.append('no')
 
     svc.fit(images, features)
     return svc
@@ -68,7 +67,7 @@ def initialize_svm(kernel, gamma):
 if __name__ == '__main__':
 
     pred = []
-    machine = initialize_svm('linear', 1)
+    machine = initialize_svm('linear', 2, 1000)
 
     pred.append(open_and_process_image('1.jpg'))
 
