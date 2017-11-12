@@ -49,10 +49,10 @@ def open_and_process_image(filename):
     return process_image(image_to_process)
 
 
-def initialize_svm():
+def initialize_svm(kernel, gamma):
     images = []
     features = []
-    svc = svm.SVC(kernel='linear', gamma=1)
+    svc = svm.SVC(kernel=kernel, gamma=gamma)
     for file in glob.glob("plearn/*.jpg"):
         images.append(open_and_process_image(file))
         features.append(1)
@@ -68,13 +68,10 @@ def initialize_svm():
 if __name__ == '__main__':
 
     pred = []
-    machine = initialize_svm()
+    machine = initialize_svm('linear', 1)
 
-    im = Image.open('1.jpg')
-    im = process_image(im)
-    pred.append(im)
+    pred.append(open_and_process_image('1.jpg'))
 
-    im = Image.open('n1.jpg')
-    im = process_image(im)
-    pred.append(im)
+    pred.append(open_and_process_image('n1.jpg'))
+
     print(machine.predict(pred))
