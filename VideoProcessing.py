@@ -63,9 +63,9 @@ def load_samples_and_labels(samples_path, features):
     labels = []
     feature_number = 0
     for sample_path in samples_path:
-        for sample in glob.glob(sample_path)
+        for sample in glob.glob(sample_path):
             images.append(open_and_process_image(sample))
-            labels.append(features[feature_num])
+            labels.append(features[feature_number])
         feature_number += 1
 
     return images, labels
@@ -75,15 +75,7 @@ if __name__ == '__main__':
 
     pred = []
 
-    images = []
-    labels = []
-    for file in glob.glob("plearn/*.jpg"):
-        images.append(open_and_process_image(file))
-        labels.append('yes')
-
-    for file in glob.glob("pnotlearn/*.jpg"):
-        images.append(open_and_process_image(file))
-        labels.append('no')
+    images, labels = load_samples_and_labels(["plearn/*.jpg", "pnotlearn/*.jpg"], ['yes', 'no'])
 
     machine = initialize_svn(images, labels, 'linear', 2, 1000)
 
