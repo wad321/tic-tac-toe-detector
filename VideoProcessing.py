@@ -1,4 +1,4 @@
-from multiprocessing import Process, Lock,  Value, Array
+from multiprocessing import Process, Array
 import numpy as np
 from sklearn import svm, preprocessing, feature_extraction
 from sklearn.externals import joblib
@@ -7,9 +7,7 @@ import glob
 import scipy.misc
 from PIL import Image
 
-Scaler = preprocessing.StandardScaler()
 size = 128, 128
-
 
 def get_frame(capture):
     ret, frame = capture.read()
@@ -38,7 +36,7 @@ def show_frame(frame):
 def process_image(img):
     img = img.resize(size, resample=Image.LANCZOS)
     img = img.convert('L')
-    img = Scaler.fit(img).transform(img)
+    img = preprocessing.StandardScaler().fit(img).transform(img)
     img = img.flatten()
     return img
 
@@ -69,6 +67,20 @@ def load_samples_and_labels(samples_path, features):
         feature_number += 1
 
     return images, labels
+
+
+def get_matched_coordinates(image, template):
+    templateWidth, templateHeight = template.shape[:2]
+    for scale in np.linspace(0.2, 1.0, 20)[::-1]:
+        resized = image.resize()
+        if resized.shape[0] < templateHeight\
+                or resized.shape[1] < templateWidth:
+            break
+        # process()
+        edged = cv2.Canny(resized, 50, 200)
+        result = cv2.matchTemplate(edged, template, cv2.TM_CCOEFF)
+        (_, maxVal, _, maxLoc) = cv2.minMaxLoc(result)
+
 
 
 if __name__ == '__main__':
