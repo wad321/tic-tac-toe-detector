@@ -56,14 +56,17 @@ def initialize_svn(samples, features, kernel, gamma, cache):
 
 def predict(svn, prediction):
     print(svn.predict(prediction))
-
-
-def load_samples_and_labels(samples, features):
+    
+    
+def load_samples_and_labels(samples_path, features):
     images = []
     labels = []
-    for sample, feature in samples, features:
-        images.append(open_and_process_image(sample))
-        labels.append(feature)
+    feature_number = 0
+    for sample_path in samples_path:
+        for sample in glob.glob(sample_path)
+            images.append(open_and_process_image(sample))
+            labels.append(features[feature_num])
+        feature_number += 1
 
     return images, labels
 
