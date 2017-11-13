@@ -4,7 +4,7 @@ from sklearn import svm, preprocessing, feature_extraction
 from sklearn.externals import joblib
 import cv2
 import glob
-import scipy.misc
+import imutils
 from PIL import Image
 
 size = 128, 128
@@ -69,23 +69,52 @@ def load_samples_and_labels(samples_path, features):
     return images, labels
 
 
-def get_matched_coordinates(image, template):
-    templateWidth, templateHeight = template.shape[:2]
-    for scale in np.linspace(0.2, 1.0, 20)[::-1]:
-        resized = image.resize()
-        if resized.shape[0] < templateHeight\
-                or resized.shape[1] < templateWidth:
-            break
-        # process()
-        edged = cv2.Canny(resized, 50, 200)
-        result = cv2.matchTemplate(edged, template, cv2.TM_CCOEFF)
-        (_, maxVal, _, maxLoc) = cv2.minMaxLoc(result)
+def child_match_template(resized, template, ratio, interpolation, output_array):
+    edged = cv2.Canny(resized, 50, 200)
+    result = cv2.matchTemplate(edged, template, cv2.TM_CCOEFF)
+    (_, maxVal, _, maxLoc) = cv2.minMaxLoc(result)
+    output_array[interpolation][0] = maxVal
+    output_array[interpolation][1] = maxLoc[0]
+    output_array[interpolation][2] = maxLoc[1]
+    output_array[interpolation][2] = ratio
+    return 0
 
+
+def get_matched_coordinates(image, template, interpolations):
+    templateWidth, templateHeight = template.shape[1], template.shape[0]
+    shared_array = Array( 'd', np.zeros((interpolations, 4)) )
+    threads = []
+    current_interpolation = 0
+    for scale in np.linspace(0.2, 1.0, interpolations)[::-1]:
+        resized = imutils.resize(image, width = int(image.shape[1] * scale))
+
+        if resized.shape[0] < templateHeight or resized.shape[1] < templateWidth:
+            break
+
+        ratio = image.shape[1] / float(resized.shape[1])
+        p = Process(target=child_match_template, args=(resized, template, ratio, current_interpolation, shared_array,))
+        threads.append(p)
+        current_interpolation += 1
+
+    for i in range(current_interpolation):
+        threads[i].start()
+
+    for i in range(current_interpolation):
+        threads[i].join()
+
+    found = None
+
+    for i in range(current_interpolation):
+        if found == None or shared_array[i][0] > found[0]:
+            found = (shared_array[i][1], shared_array[i][2], shared_array[i][3])
+
+    return found
 
 
 if __name__ == '__main__':
 
     pred = []
+
 
     images, labels = load_samples_and_labels(["plearn/*.jpg", "pnotlearn/*.jpg"], ['yes', 'no'])
 
