@@ -9,6 +9,7 @@ from PIL import Image
 
 size = 128, 128
 
+
 def get_frame(capture):
     ret, frame = capture.read()
     if not ret:
@@ -17,9 +18,9 @@ def get_frame(capture):
         return frame
 
 
-def detect_on_frame(frame, machine):
+def detect_on_frame(frame, detector):
     img_to_predict = process_image(frame)
-    return machine.predict(img_to_predict)
+    return detector.predict(img_to_predict)
 
 
 def change_frame(frame):
@@ -81,12 +82,13 @@ def child_match_template(resized, template, ratio, interpolation, output_array):
 
 
 def get_matched_coordinates(image, template, interpolations):
-    templateWidth, templateHeight = template.shape[1], template.shape[0]
-    shared_array = Array( 'd', np.zeros((interpolations * 4, 1)) )
+    templateWidth = template.shape[1]
+    templateHeight = template.shape[0]
+    shared_array = Array('d', np.zeros((interpolations * 4, 1)))
     threads = []
     current_interpolation = 0
     for scale in np.linspace(0.2, 1.0, interpolations)[::-1]:
-        resized = imutils.resize(image, width = int(image.shape[1] * scale))
+        resized = imutils.resize(image, width=int(image.shape[1] * scale))
 
         if resized.shape[0] < templateHeight or resized.shape[1] < templateWidth:
             break
@@ -94,10 +96,8 @@ def get_matched_coordinates(image, template, interpolations):
         ratio = image.shape[1] / float(resized.shape[1])
         p = Process(target=child_match_template, args=(resized, template, ratio, current_interpolation, shared_array,))
         threads.append(p)
+        p.start()
         current_interpolation += 1
-
-    for i in range(current_interpolation):
-        threads[i].start()
 
     for i in range(current_interpolation):
         threads[i].join()
@@ -105,7 +105,7 @@ def get_matched_coordinates(image, template, interpolations):
     found = None
 
     for i in range(current_interpolation):
-        if found == None or shared_array[i][0] > found[0]:
+        if found is None or shared_array[i][0] > found[0]:
             place = i * 4
             found = (shared_array[place + 1], shared_array[place + 2], shared_array[place + 3])
 
@@ -115,7 +115,6 @@ def get_matched_coordinates(image, template, interpolations):
 if __name__ == '__main__':
 
     pred = []
-
 
     images, labels = load_samples_and_labels(["plearn/*.jpg", "pnotlearn/*.jpg"], ['yes', 'no'])
 
