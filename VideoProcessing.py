@@ -10,17 +10,20 @@ from PIL import Image
 size = 64, 64
 
 
-def process_image(img):
-    img = img.resize(size, resample=Image.LANCZOS)
-    img = img.convert('L')
-    img = preprocessing.StandardScaler().fit(img).transform(img)
-    img = img.flatten()
-    return img
+def process_frame(frame, changetograyscale):
+    frame = crop_middle_square(frame)
+    frame = imutils.resize(frame, width=size[0], inter=cv2.INTER_LANCZOS4)
+    if changetograyscale:
+        frame = cv2.cvtColor(frame, cv2.COLOR_RGB2GRAY)
+    frame = frame.astype(np.float64)
+    frame = preprocessing.StandardScaler().fit(frame).transform(frame)
+    frame = frame.flatten()
+    return frame
 
 
 def open_and_process_image(filename):
-    image_to_process = Image.open(filename)
-    return process_image(image_to_process)
+    image_to_process = cv2.imread(filename, cv2.IMREAD_UNCHANGED)
+    return process_frame(image_to_process, True)
 
 
 def initialize_svn(samples, features, kernel, gamma, cache):
@@ -55,7 +58,7 @@ def get_frame(capture):
 
 
 def detect_on_frame(frame, detector):
-    img_to_predict = process_image(frame)
+    img_to_predict = process_frame(frame, False)
     return detector.predict(img_to_predict)
 
 
@@ -128,7 +131,26 @@ def crop_middle_square(image):
             image = image[int((w-h)/2):int((w+h)/2), 0:h].copy()
         else:
             image = image[0:w, int((h-w)/2):int((h+w)/2)].copy()
+
     return image
+
+
+def get_nine_images(image, start, end):
+    nine_images = []
+    coords = np.zeros((2, 4))
+    image = cv2.cvtColor(image, cv2.COLOR_RGB2GRAY)
+    for i in range(2):
+        coords[i] = [start[i], int((2 * start[i] + end[i])/3), int((start[i] + 2 * end[i])/3), end[i]]
+    coords = coords.astype(np.int)
+
+    for y in range(3):
+        for x in range(3):
+            crop = image[coords[0][x]:coords[0][x+1], coords[1][y]:coords[1][y+1]].copy()
+            cv2.imshow("Image", crop)
+            cv2.waitKey(0)
+            nine_images.append(process_frame(crop, False))
+
+    return nine_images
 
 
 if __name__ == '__main__':
@@ -146,23 +168,21 @@ if __name__ == '__main__':
     machine = initialize_svn(images, labels, 'linear', 2, 1000)
 
     found = get_matched_coordinates(testimage, template, 18)
-
     (maxLoc0, maxLoc1, r) = found
-    (startX, startY) = (int(maxLoc0 * r), int(maxLoc1 * r))
-    (endX, endY) = (int((maxLoc0 + template.shape[1]) * r), int((maxLoc1 + template.shape[0]) * r))
+    startXY = (int(maxLoc0 * r), int(maxLoc1 * r))
+    endXY = (int((maxLoc0 + template.shape[1]) * r), int((maxLoc1 + template.shape[0]) * r))
 
-    print((startX, startY))
-    print((endX, endY))
+    nineobjs = get_nine_images(testimage, startXY, endXY) #BAD COORDS FOR NINE PICTURES
 
     # draw a bounding box around the detected result and display the image
-    cv2.rectangle(testimage, (startX, startY), (endX, endY), (0, 0, 255), 2)
+    cv2.rectangle(testimage, startXY, endXY, (0, 0, 255), 2)
+
     cv2.imshow("Image", testimage)
     cv2.waitKey(0)
-
     #pred.append(open_and_process_image('D:\MojeProjekty\PyCharm\VideoReader\IMG_20171114_110854.jpg'))
 
-    #p1 = Process(target=predict, args=(machine, pred,))
+    p1 = Process(target=predict, args=(machine, nineobjs,))
     #p2 = Process(target=predict, args=(machine, pred,))
 
-    #p1.start()
+    p1.start()
     #p2.start()
