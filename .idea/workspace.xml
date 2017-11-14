@@ -2,11 +2,9 @@
 <project version="4">
   <component name="BookmarkManager">
     <bookmark url="file://$PROJECT_DIR$/VideoProcessing.py" line="123" />
-    <bookmark url="file://$PROJECT_DIR$/VideoProcessing.py" line="178" />
   </component>
   <component name="ChangeListManager">
     <list default="true" id="14532e27-ff42-4dde-b87d-0547ec1a4668" name="Default" comment="">
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/VideoProcessing.py" afterPath="$PROJECT_DIR$/VideoProcessing.py" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -21,8 +19,8 @@
       <file leaf-file-name="VideoProcessing.py" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/VideoProcessing.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="323">
-              <caret line="175" column="58" lean-forward="false" selection-start-line="175" selection-start-column="58" selection-end-line="175" selection-end-column="58" />
+            <state relative-caret-position="520">
+              <caret line="189" column="25" lean-forward="true" selection-start-line="189" selection-start-column="25" selection-end-line="189" selection-end-column="25" />
               <folding>
                 <element signature="e#0#42#0" expanded="true" />
               </folding>
@@ -297,27 +295,7 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/VideoProcessing.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="0">
-          <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-          <folding>
-            <element signature="e#0#42#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/plearn/7.jpg">
-      <provider selected="true" editor-type-id="images">
-        <state />
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/plearn/8.jpg">
-      <provider selected="true" editor-type-id="images">
-        <state />
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/plearn/9.jpg">
       <provider selected="true" editor-type-id="images">
         <state />
       </provider>
@@ -352,11 +330,6 @@
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/1.jpg" />
-    <entry file="file://$PROJECT_DIR$/plearn/5.jpg">
-      <provider selected="true" editor-type-id="images">
-        <state />
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/.gitignore" />
     <entry file="file://$PROJECT_DIR$/template2.jpg">
       <provider selected="true" editor-type-id="images">
@@ -456,16 +429,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/plearn/2.jpg">
-      <provider selected="true" editor-type-id="images">
-        <state />
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/krzyzyki/IMG_20171114_110854.jpg">
-      <provider selected="true" editor-type-id="images">
-        <state />
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/krzyzyki/IMG_20171114_110859.jpg">
       <provider selected="true" editor-type-id="images">
         <state />
@@ -496,10 +459,40 @@
         <state />
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/krzyzyki/IMG_20171114_110854.jpg">
+      <provider selected="true" editor-type-id="images">
+        <state />
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/krzyzyki/IMG_20171114_111027.jpg">
+      <provider selected="true" editor-type-id="images">
+        <state />
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/plearn/5.jpg">
+      <provider selected="true" editor-type-id="images">
+        <state />
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/plearn/7.jpg">
+      <provider selected="true" editor-type-id="images">
+        <state />
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/plearn/9.jpg">
+      <provider selected="true" editor-type-id="images">
+        <state />
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/plearn/2.jpg">
+      <provider selected="true" editor-type-id="images">
+        <state />
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/VideoProcessing.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="323">
-          <caret line="175" column="58" lean-forward="false" selection-start-line="175" selection-start-column="58" selection-end-line="175" selection-end-column="58" />
+        <state relative-caret-position="520">
+          <caret line="189" column="25" lean-forward="true" selection-start-line="189" selection-start-column="25" selection-end-line="189" selection-end-column="25" />
           <folding>
             <element signature="e#0#42#0" expanded="true" />
           </folding>

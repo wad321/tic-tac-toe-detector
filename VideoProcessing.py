@@ -27,14 +27,14 @@ def open_and_process_image(filename):
     return process_frame(image_to_process, True)
 
 
-def initialize_svn(samples, features, kernel, gamma, cache):
-    svc = svm.SVC(kernel=kernel, gamma=gamma, cache_size=cache)
+def initialize_svn(samples, features, c, gamma):
+    svc = svm.SVC(kernel='rbf', C=c, gamma=gamma, cache_size=1000)
     svc.fit(samples, features)
     return svc
 
 
-def predict(svn, prediction):
-    print(svn.predict(prediction))
+def predict(svn, prediction, gamma, c):
+    print(gamma, c, svn.predict(prediction))
 
 
 def load_samples_and_labels(samples_path, features):
@@ -147,8 +147,8 @@ def get_nine_images(image, start, end):
     for y in range(3):
         for x in range(3):
             crop = image[coords[1][x]:coords[1][x+1], coords[0][y]:coords[0][y+1]].copy()
-            # cv2.imshow('image', crop)
-            # cv2.waitKey(0)
+            #cv2.imshow('image', crop)
+            #cv2.waitKey(0)
             nine_images.append(process_frame(crop, False))
 
     return nine_images
@@ -159,31 +159,35 @@ if __name__ == '__main__':
     pred = []
     img = cv2.imread("template2.jpg", cv2.IMREAD_COLOR)
     img2 = img.flatten()
-    testimage = cv2.imread("template2.jpg", cv2.IMREAD_COLOR)
+    testimage = cv2.imread("plearn/2.jpg", cv2.IMREAD_COLOR)
     testimage = imutils.resize(testimage, width=800)
     img = imutils.resize(img, width=256)
     template = prepare_template_from_image(img)
 
-    images, labels = load_samples_and_labels(["kolka/*.jpg", "krzyzyki/*.jpg", "puste/*.jpg"], [1, -1, 0])
-
-    machine = initialize_svn(images, labels, 'linear', 1, 1000)
-
-    found = get_matched_coordinates(testimage, template, 18)
+    found = get_matched_coordinates(testimage, template, 20)
     (maxLoc0, maxLoc1, r) = found
     startXY = (int(maxLoc0 * r), int(maxLoc1 * r))
     endXY = (int((maxLoc0 + template.shape[1]) * r), int((maxLoc1 + template.shape[0]) * r))
 
-    nineobjs = get_nine_images(testimage, startXY, endXY) 
-
     # draw a bounding box around the detected result and display the image
     cv2.rectangle(testimage, startXY, endXY, (0, 0, 255), 2)
-
     cv2.imshow("Image", testimage)
     cv2.waitKey(0)
+
+    nineobjs = get_nine_images(testimage, startXY, endXY)
+
+    images, labels = load_samples_and_labels(["kolka/*.jpg", "krzyzyki/*.jpg", "puste/*.jpg"], [1, -1, 0])
+
+    c = 2**(-5)
+    gamma = 2**(-15)
+
+    while gamma <= 0.002:
+        while c <= 2**15:
+            machine = initialize_svn(images, labels, c, gamma)
+            predict(machine, nineobjs, gamma, c)
+            c = c * 2
+        c = 2 ** (-5)
+        gamma = gamma * 2
+
+
     #pred.append(open_and_process_image('D:\MojeProjekty\PyCharm\VideoReader\IMG_20171114_110854.jpg'))
-
-    p1 = Process(target=predict, args=(machine, nineobjs,))
-    #p2 = Process(target=predict, args=(machine, pred,))
-
-    p1.start()
-    #p2.start()
