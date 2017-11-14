@@ -73,16 +73,16 @@ def child_match_template(resized, template, ratio, interpolation, output_array):
     edged = cv2.Canny(resized, 50, 200)
     result = cv2.matchTemplate(edged, template, cv2.TM_CCOEFF)
     (_, maxVal, _, maxLoc) = cv2.minMaxLoc(result)
-    output_array[interpolation][0] = maxVal
-    output_array[interpolation][1] = maxLoc[0]
-    output_array[interpolation][2] = maxLoc[1]
-    output_array[interpolation][2] = ratio
+    output_array[interpolation * 4] = maxVal
+    output_array[interpolation * 4 + 1] = maxLoc[0]
+    output_array[interpolation * 4 + 2] = maxLoc[1]
+    output_array[interpolation * 4 + 3] = ratio
     return 0
 
 
 def get_matched_coordinates(image, template, interpolations):
     templateWidth, templateHeight = template.shape[1], template.shape[0]
-    shared_array = Array( 'd', np.zeros((interpolations, 4)) )
+    shared_array = Array( 'd', np.zeros((interpolations * 4, 1)) )
     threads = []
     current_interpolation = 0
     for scale in np.linspace(0.2, 1.0, interpolations)[::-1]:
