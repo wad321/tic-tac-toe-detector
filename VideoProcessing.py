@@ -11,7 +11,7 @@ size = 64, 64
 
 
 def process_image(img):
-    #img = img.resize(size, resample=Image.LANCZOS)
+    img = img.resize(size, resample=Image.LANCZOS)
     img = img.convert('L')
     img = preprocessing.StandardScaler().fit(img).transform(img)
     img = img.flatten()
@@ -90,7 +90,7 @@ def get_matched_coordinates(image, template, interpolations):
     for scale in np.linspace(0.2, 1.0, interpolations)[::-1]:
         resized = imutils.resize(image, width=int(image.shape[1] * scale))
 
-        if resized.size[0] < template_height or resized.shape[1] < template_width:
+        if resized.shape[0] < template_height or resized.shape[1] < template_width:
             break
 
         ratio = image.shape[1] / float(resized.shape[1])
@@ -105,8 +105,8 @@ def get_matched_coordinates(image, template, interpolations):
     found = None
 
     for i in range(current_interpolation):
-        if found is None or shared_array[i][0] > found[0]:
-            place = i * 4
+        place = i * 4
+        if found is None or shared_array[place] > found[0]:
             found = (shared_array[place + 1], shared_array[place + 2], shared_array[place + 3])
 
     return found
@@ -135,14 +135,26 @@ if __name__ == '__main__':
 
     pred = []
     img = cv2.imread("template2.jpg", cv2.IMREAD_COLOR)
+    testimage = cv2.imread("plearn/2.jpg", cv2.IMREAD_COLOR)
+    testimage = imutils.resize(testimage, width=800)
     img = imutils.resize(img, width=256)
-    img = prepare_template_from_image(img)
-    cv2.imshow('img', img)
+    template = prepare_template_from_image(img)
+
+    #images, labels = load_samples_and_labels(["kolka/*.jpg", "krzyzyki/*.jpg", "puste/*.jpg"], [1, -1, 0])
+
+    #machine = initialize_svn(images, labels, 'linear', 2, 1000)
+
+    found = get_matched_coordinates(testimage, template, 20)
+
+    print(found)
+    (maxLoc0, maxLoc1, r) = found
+    (startX, startY) = (int(maxLoc0 * r), int(maxLoc1 * r))
+    (endX, endY) = (int((maxLoc0 + template.shape[1]) * r), int((maxLoc1 + template.shape[0]) * r))
+
+    # draw a bounding box around the detected result and display the image
+    cv2.rectangle(testimage, (startX, startY), (endX, endY), (0, 0, 255), 2)
+    cv2.imshow("Image", testimage)
     cv2.waitKey(0)
-
-    images, labels = load_samples_and_labels(["kolka/*.jpg", "krzyzyki/*.jpg", "puste/*.jpg"], [1, -1, 0])
-
-    machine = initialize_svn(images, labels, 'linear', 2, 1000)
 
     #pred.append(open_and_process_image('D:\MojeProjekty\PyCharm\VideoReader\IMG_20171114_110854.jpg'))
 
