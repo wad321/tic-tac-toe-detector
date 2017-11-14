@@ -82,15 +82,15 @@ def child_match_template(resized, template, ratio, interpolation, output_array):
 
 
 def get_matched_coordinates(image, template, interpolations):
-    templateWidth = template.shape[1]
-    templateHeight = template.shape[0]
+    template_width = template.shape[1]
+    template_height = template.shape[0]
     shared_array = Array('d', np.zeros((interpolations * 4, 1)))
     threads = []
     current_interpolation = 0
     for scale in np.linspace(0.2, 1.0, interpolations)[::-1]:
         resized = imutils.resize(image, width=int(image.shape[1] * scale))
 
-        if resized.size[0] < templateHeight or resized.shape[1] < templateWidth:
+        if resized.size[0] < template_height or resized.shape[1] < template_width:
             break
 
         ratio = image.shape[1] / float(resized.shape[1])
