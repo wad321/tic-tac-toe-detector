@@ -135,21 +135,24 @@ if __name__ == '__main__':
 
     pred = []
     img = cv2.imread("template2.jpg", cv2.IMREAD_COLOR)
+    img2 = img.flatten()
     testimage = cv2.imread("plearn/2.jpg", cv2.IMREAD_COLOR)
     testimage = imutils.resize(testimage, width=800)
     img = imutils.resize(img, width=256)
     template = prepare_template_from_image(img)
 
-    #images, labels = load_samples_and_labels(["kolka/*.jpg", "krzyzyki/*.jpg", "puste/*.jpg"], [1, -1, 0])
+    images, labels = load_samples_and_labels(["kolka/*.jpg", "krzyzyki/*.jpg", "puste/*.jpg"], [1, -1, 0])
 
-    #machine = initialize_svn(images, labels, 'linear', 2, 1000)
+    machine = initialize_svn(images, labels, 'linear', 2, 1000)
 
-    found = get_matched_coordinates(testimage, template, 20)
+    found = get_matched_coordinates(testimage, template, 18)
 
-    print(found)
     (maxLoc0, maxLoc1, r) = found
     (startX, startY) = (int(maxLoc0 * r), int(maxLoc1 * r))
     (endX, endY) = (int((maxLoc0 + template.shape[1]) * r), int((maxLoc1 + template.shape[0]) * r))
+
+    print((startX, startY))
+    print((endX, endY))
 
     # draw a bounding box around the detected result and display the image
     cv2.rectangle(testimage, (startX, startY), (endX, endY), (0, 0, 255), 2)
