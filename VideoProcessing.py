@@ -134,8 +134,8 @@ def crop_middle_square(image):
 if __name__ == '__main__':
 
     pred = []
-    img = cv2.imread("1.jpg", cv2.IMREAD_COLOR)
-    print(img.shape[0])
+    img = cv2.imread("template2.jpg", cv2.IMREAD_COLOR)
+    img = imutils.resize(img, width=256)
     print(img.shape[1])
     img = prepare_template_from_image(img)
     print(img.shape[0])
@@ -145,16 +145,16 @@ if __name__ == '__main__':
 
 
 
-    images, labels = load_samples_and_labels(["plearn/*.jpg", "pnotlearn/*.jpg"], ['yes', 'no'])
+    #images, labels = load_samples_and_labels(["plearn/*.jpg", "pnotlearn/*.jpg"], ['yes', 'no'])
 
-    machine = initialize_svn(images, labels, 'linear', 2, 1000)
+    #machine = initialize_svn(images, labels, 'linear', 2, 1000)
 
-    pred.append(open_and_process_image('1.jpg'))
+    #pred.append(open_and_process_image('1.jpg'))
 
-    pred.append(open_and_process_image('n1.jpg'))
+    #pred.append(open_and_process_image('n1.jpg'))
 
-    p1 = Process(target=predict, args=(machine, pred,))
-    p2 = Process(target=predict, args=(machine, pred,))
+    #p1 = Process(target=predict, args=(machine, pred,))
+    #p2 = Process(target=predict, args=(machine, pred,))
 
-    p1.start()
-    p2.start()
+    #p1.start()
+    #p2.start()
