@@ -10,6 +10,42 @@ from PIL import Image
 size = 128, 128
 
 
+def process_image(img):
+    img = img.resize(size, resample=Image.LANCZOS)
+    img = img.convert('L')
+    img = preprocessing.StandardScaler().fit(img).transform(img)
+    img = img.flatten()
+    return img
+
+
+def open_and_process_image(filename):
+    image_to_process = Image.open(filename)
+    return process_image(image_to_process)
+
+
+def initialize_svn(samples, features, kernel, gamma, cache):
+    svc = svm.SVC(kernel=kernel, gamma=gamma, cache_size=cache)
+    svc.fit(samples, features)
+    return svc
+
+
+def predict(svn, prediction):
+    print(svn.predict(prediction))
+
+
+def load_samples_and_labels(samples_path, features):
+    images = []
+    labels = []
+    feature_number = 0
+    for sample_path in samples_path:
+        for sample in glob.glob(sample_path):
+            images.append(open_and_process_image(sample))
+            labels.append(features[feature_number])
+        feature_number += 1
+
+    return images, labels
+
+
 def get_frame(capture):
     ret, frame = capture.read()
     if not ret:
@@ -34,42 +70,6 @@ def show_frame(frame):
     return frame
 
 
-def process_image(img):
-    img = img.resize(size, resample=Image.LANCZOS)
-    img = img.convert('L')
-    img = preprocessing.StandardScaler().fit(img).transform(img)
-    img = img.flatten()
-    return img
-
-
-def open_and_process_image(filename):
-    image_to_process = Image.open(filename)
-    return process_image(image_to_process)
-
-
-def initialize_svn(samples, features, kernel, gamma, cache):
-    svc = svm.SVC(kernel=kernel, gamma=gamma, cache_size=cache)
-    svc.fit(samples, features)
-    return svc
-
-
-def predict(svn, prediction):
-    print(svn.predict(prediction))
-    
-    
-def load_samples_and_labels(samples_path, features):
-    images = []
-    labels = []
-    feature_number = 0
-    for sample_path in samples_path:
-        for sample in glob.glob(sample_path):
-            images.append(open_and_process_image(sample))
-            labels.append(features[feature_number])
-        feature_number += 1
-
-    return images, labels
-
-
 def child_match_template(resized, template, ratio, interpolation, output_array):
     edged = cv2.Canny(resized, 50, 200)
     result = cv2.matchTemplate(edged, template, cv2.TM_CCOEFF)
@@ -90,7 +90,7 @@ def get_matched_coordinates(image, template, interpolations):
     for scale in np.linspace(0.2, 1.0, interpolations)[::-1]:
         resized = imutils.resize(image, width=int(image.shape[1] * scale))
 
-        if resized.shape[0] < templateHeight or resized.shape[1] < templateWidth:
+        if resized.size[0] < templateHeight or resized.shape[1] < templateWidth:
             break
 
         ratio = image.shape[1] / float(resized.shape[1])
@@ -112,9 +112,36 @@ def get_matched_coordinates(image, template, interpolations):
     return found
 
 
+def prepare_template_from_image(image):
+    if image.shape[0] != image.shape[1]:
+        image = crop_middle_square(image)
+    gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+    template = cv2.Canny(gray, 50, 200)
+    return template
+
+
+def crop_middle_square(image):
+    if image.shape[0] != image.shape[1]:
+        w = image.shape[0]
+        h = image.shape[1]
+        if w > h:
+            image = image[int((w-h)/2):int((w+h)/2), 0:h].copy()
+        else:
+            image = image[0:w, int((h-w)/2):int((h+w)/2)].copy()
+    return image
+
+
 if __name__ == '__main__':
 
     pred = []
+    img = cv2.imread("1.jpg", cv2.IMREAD_COLOR)
+    print(img.shape[0])
+    print(img.shape[1])
+    img = prepare_template_from_image(img)
+    print(img.shape[0])
+    print(img.shape[1])
+    cv2.imshow('img', img)
+    cv2.waitKey(0)
 
     images, labels = load_samples_and_labels(["plearn/*.jpg", "pnotlearn/*.jpg"], ['yes', 'no'])
 
