@@ -143,6 +143,8 @@ if __name__ == '__main__':
     cv2.imshow('img', img)
     cv2.waitKey(0)
 
+
+
     images, labels = load_samples_and_labels(["plearn/*.jpg", "pnotlearn/*.jpg"], ['yes', 'no'])
 
     machine = initialize_svn(images, labels, 'linear', 2, 1000)
