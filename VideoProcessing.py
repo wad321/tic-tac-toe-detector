@@ -15,6 +15,7 @@ def process_frame(frame, changetograyscale):
     frame = imutils.resize(frame, width=size[0], inter=cv2.INTER_LANCZOS4)
     if changetograyscale:
         frame = cv2.cvtColor(frame, cv2.COLOR_RGB2GRAY)
+    frame = cv2.Canny(frame, 50, 200)
     frame = frame.astype(np.float64)
     frame = preprocessing.StandardScaler().fit(frame).transform(frame)
     frame = frame.flatten()
@@ -145,9 +146,9 @@ def get_nine_images(image, start, end):
 
     for y in range(3):
         for x in range(3):
-            crop = image[coords[0][x]:coords[0][x+1], coords[1][y]:coords[1][y+1]].copy()
-            cv2.imshow("Image", crop)
-            cv2.waitKey(0)
+            crop = image[coords[1][x]:coords[1][x+1], coords[0][y]:coords[0][y+1]].copy()
+            # cv2.imshow('image', crop)
+            # cv2.waitKey(0)
             nine_images.append(process_frame(crop, False))
 
     return nine_images
@@ -158,21 +159,21 @@ if __name__ == '__main__':
     pred = []
     img = cv2.imread("template2.jpg", cv2.IMREAD_COLOR)
     img2 = img.flatten()
-    testimage = cv2.imread("plearn/2.jpg", cv2.IMREAD_COLOR)
+    testimage = cv2.imread("template2.jpg", cv2.IMREAD_COLOR)
     testimage = imutils.resize(testimage, width=800)
     img = imutils.resize(img, width=256)
     template = prepare_template_from_image(img)
 
     images, labels = load_samples_and_labels(["kolka/*.jpg", "krzyzyki/*.jpg", "puste/*.jpg"], [1, -1, 0])
 
-    machine = initialize_svn(images, labels, 'linear', 2, 1000)
+    machine = initialize_svn(images, labels, 'linear', 1, 1000)
 
     found = get_matched_coordinates(testimage, template, 18)
     (maxLoc0, maxLoc1, r) = found
     startXY = (int(maxLoc0 * r), int(maxLoc1 * r))
     endXY = (int((maxLoc0 + template.shape[1]) * r), int((maxLoc1 + template.shape[0]) * r))
 
-    nineobjs = get_nine_images(testimage, startXY, endXY) #BAD COORDS FOR NINE PICTURES
+    nineobjs = get_nine_images(testimage, startXY, endXY) 
 
     # draw a bounding box around the detected result and display the image
     cv2.rectangle(testimage, startXY, endXY, (0, 0, 255), 2)
