@@ -106,7 +106,8 @@ def get_matched_coordinates(image, template, interpolations):
 
     for i in range(current_interpolation):
         if found == None or shared_array[i][0] > found[0]:
-            found = (shared_array[i][1], shared_array[i][2], shared_array[i][3])
+            place = i * 4
+            found = (shared_array[place + 1], shared_array[place + 2], shared_array[place + 3])
 
     return found
 
