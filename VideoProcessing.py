@@ -7,11 +7,11 @@ import glob
 import imutils
 from PIL import Image
 
-size = 128, 128
+size = 64, 64
 
 
 def process_image(img):
-    img = img.resize(size, resample=Image.LANCZOS)
+    #img = img.resize(size, resample=Image.LANCZOS)
     img = img.convert('L')
     img = preprocessing.StandardScaler().fit(img).transform(img)
     img = img.flatten()
@@ -136,22 +136,15 @@ if __name__ == '__main__':
     pred = []
     img = cv2.imread("template2.jpg", cv2.IMREAD_COLOR)
     img = imutils.resize(img, width=256)
-    print(img.shape[1])
     img = prepare_template_from_image(img)
-    print(img.shape[0])
-    print(img.shape[1])
     cv2.imshow('img', img)
     cv2.waitKey(0)
 
+    images, labels = load_samples_and_labels(["kolka/*.jpg", "krzyzyki/*.jpg", "puste/*.jpg"], [1, -1, 0])
 
+    machine = initialize_svn(images, labels, 'linear', 2, 1000)
 
-    #images, labels = load_samples_and_labels(["plearn/*.jpg", "pnotlearn/*.jpg"], ['yes', 'no'])
-
-    #machine = initialize_svn(images, labels, 'linear', 2, 1000)
-
-    #pred.append(open_and_process_image('1.jpg'))
-
-    #pred.append(open_and_process_image('n1.jpg'))
+    #pred.append(open_and_process_image('D:\MojeProjekty\PyCharm\VideoReader\IMG_20171114_110854.jpg'))
 
     #p1 = Process(target=predict, args=(machine, pred,))
     #p2 = Process(target=predict, args=(machine, pred,))
