@@ -15,9 +15,9 @@ def process_frame(frame, changetograyscale):
     frame = imutils.resize(frame, width=size[0], inter=cv2.INTER_LANCZOS4)
     if changetograyscale:
         frame = cv2.cvtColor(frame, cv2.COLOR_RGB2GRAY)
-    #frame = cv2.Canny(frame, 80, 200)
-    #cv2.imshow('image', frame)
-    #cv2.waitKey(0)
+    # frame = cv2.Canny(frame, 80, 200)
+    # cv2.imshow('image', frame)
+    # cv2.waitKey(0)
     frame = frame.astype(np.float64)
     frame = preprocessing.StandardScaler().fit(frame).transform(frame)
     frame = frame.flatten()
@@ -35,8 +35,11 @@ def initialize_svn(samples, features, c, gamma):
     return svc
 
 
-def predict(svn, prediction, gamma, c):
-    print(gamma, c, svn.predict(prediction))
+def predict(svn, prediction):
+    array = []
+    for obj in svn.predict(prediction):
+        array.append(obj)
+    return array
 
 
 def load_samples_and_labels(samples_path, features):
@@ -159,8 +162,8 @@ def get_nine_images(image, start, end):
     return nine_images
 
 
-def match_two_templates(image, start, end, circle, cross):
-    nine_images = []
+def match_two_templates(image, start, end, circle, cross, threshold):
+    array = []
     coords = np.zeros((2, 4))
     image = cv2.cvtColor(image, cv2.COLOR_RGB2GRAY)
     for i in range(2):
@@ -173,6 +176,19 @@ def match_two_templates(image, start, end, circle, cross):
             cv2.imshow('crop', crop)
             cv2.waitKey(0)
             canny = cv2.Canny(crop, 100, 200)
+            cr = cv2.matchTemplate(canny, cross)
+            ci = cv2.matchTemplate(canny, circle)
+            (_, maxCrossVal, _, _) = cv2.minMaxLoc(cr)
+            (_, maxCircleVal, _, _) = cv2.minMaxLoc(ci)
+
+            if maxCrossVal < threshold and maxCircleVal < threshold:
+                array.append(0)
+            elif maxCircleVal > maxCrossVal:
+                array.append(1)
+            else:
+                array.append(-1)
+
+    return array
 
 
 if __name__ == '__main__':
@@ -206,9 +222,9 @@ if __name__ == '__main__':
         while c <= 2 ** 3:
             goodhits = 0
             machine = initialize_svn(images, labels, c, gamma)
-            array = []
-            for obj in machine.predict(nineobjs):
-                array.append(obj)
+
+            array = predict(machine, nineobjs)
+
             for i in range(9):
                 if answer[i] == array[i]:
                     goodhits += 1
