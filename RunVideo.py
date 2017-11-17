@@ -34,7 +34,7 @@ def predict(svn, prediction):
 
 
 def initialize_svn(samples, features, c, gamma):
-    svc = svm.SVC(kernel='rbf', C=c, cache_size=1000)
+    svc = svm.SVC(kernel='rbf', C=c, gamma=gamma, cache_size=1000)
     svc.fit(samples, features)
     return svc
 
@@ -46,15 +46,14 @@ def process_frame(f_frame, changetograyscale):
     if changetograyscale:
         f_frame = cv2.cvtColor(f_frame, cv2.COLOR_RGB2GRAY)
 
-    # cv2.imshow('image', f_frame)
-    # cv2.waitKey(0)
+    f_frame = cv2.Canny(f_frame, 80, 200)
+    cv2.imshow('image', f_frame)
+    cv2.waitKey(0)
 
     if svn_format:
         f_frame = f_frame.astype(np.float64)
         f_frame = preprocessing.StandardScaler().fit(f_frame).transform(f_frame)
         f_frame = f_frame.flatten()
-    else:
-        f_frame = cv2.Canny(f_frame, 80, 200)
 
     return f_frame
 
@@ -106,8 +105,8 @@ def prepare_template_from_image(image, width):
         image = crop_middle_square(image)
     f_gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
     f_template = cv2.Canny(f_gray, 100, 150)
-    cv2.imshow('template', f_template)
-    cv2.waitKey(0)
+    # cv2.imshow('template', f_template)
+    # cv2.waitKey(0)
     return f_template
 
 
@@ -126,7 +125,6 @@ def crop_middle_square(image):
 def match_two_templates(image, start, end, templates):
     array = []
     coords = np.zeros((2, 4))
-    image = cv2.cvtColor(image, cv2.COLOR_RGB2GRAY)
     for i in range(2):
         coords[i] = [start[i], int((2 * start[i] + end[i]) / 3), int((start[i] + 2 * end[i]) / 3), end[i]]
     coords = coords.astype(np.int)
@@ -134,15 +132,17 @@ def match_two_templates(image, start, end, templates):
     for y in range(3):
         for x in range(3):
             crop = image[coords[1][x]:coords[1][x+1], coords[0][y]:coords[0][y+1]].copy()
-            cv2.imshow('crop', crop)
-            cv2.waitKey(0)
-            canny = cv2.Canny(crop, 80, 200)
+            resized = imutils.resize(crop, width=circle_cross_size, inter=cv2.INTER_LINEAR)
+            # cv2.imshow('crop', crop)
+            # cv2.waitKey(0)
+            canny = cv2.Canny(resized, 80, 200)
             cross = cv2.matchTemplate(canny, templates[0],  cv2.TM_CCOEFF)
             circle = cv2.matchTemplate(canny, templates[1],  cv2.TM_CCOEFF)
             (_, maxCrossVal, _, _) = cv2.minMaxLoc(cross)
             (_, maxCircleVal, _, _) = cv2.minMaxLoc(circle)
 
-            if maxCrossVal < template_threshold and maxCircleVal < template_threshold:
+            print('Kolko/Krzyzyk/Nic:', x, y, ": ", maxCrossVal, maxCircleVal)
+            if maxCrossVal < secondary_threshold and maxCircleVal < secondary_threshold:
                 array.append(0)
             elif maxCircleVal > maxCrossVal:
                 array.append(1)
@@ -155,7 +155,6 @@ def match_two_templates(image, start, end, templates):
 def get_nine_images(image, start, end):
     nine_images = []
     coords = np.zeros((2, 4))
-    image = cv2.cvtColor(image, cv2.COLOR_RGB2GRAY)
     for i in range(2):
         coords[i] = [start[i], int((2 * start[i] + end[i])/3), int((start[i] + 2 * end[i])/3), end[i]]
     coords = coords.astype(np.int)
@@ -185,7 +184,7 @@ def second_process(f_frame, number):
         else:
             places = match_two_templates(f_gray, startxy, endxy, (cross_template, circle_template))
 
-        place_to_draw = [startxy, endxy]
+        place_to_draw = [startxy, endxy] + places
     else:
         place_to_draw = [(-1, -1), (-1, -1)]
 
@@ -193,10 +192,12 @@ def second_process(f_frame, number):
 
 
 size = 64, 64
-svn_format = False
-template_size = 128
-template_threshold = 15000000.0
-secondary_threshold = 20000000.0
+svn_format = True
+template_size = 96
+circle_cross_size = 64
+video_size_width = 600
+template_threshold = 7500000.0
+secondary_threshold = 10000000.0
 frames_between_detection = 140
 match_template_interpolations = 15
 
@@ -207,8 +208,10 @@ if svn_format:
     images, labels = load_samples_and_labels(["kolka/*.jpg", "krzyzyki/*.jpg", "puste/*.jpg"], [1, -1, 0])
     svn_machine = initialize_svn(images, labels, 1, 0.02)
 else:
-    circle_template = prepare_template_from_image(cv2.imread("templates/circle_template.jpg", cv2.IMREAD_COLOR), 64)
-    cross_template = prepare_template_from_image(cv2.imread("templates/cross_template.jpg", cv2.IMREAD_COLOR), 64)
+    circle_template = prepare_template_from_image(
+        cv2.imread("templates/circle_template.jpg", cv2.IMREAD_COLOR), circle_cross_size)
+    cross_template = prepare_template_from_image(
+        cv2.imread("templates/cross_template.jpg", cv2.IMREAD_COLOR), circle_cross_size)
 
 
 if __name__ == '__main__':
@@ -233,6 +236,7 @@ if __name__ == '__main__':
             where_draw = pending.popleft().get()
 
         ret, frame = cap.read()
+        frame = imutils.resize(frame, width=video_size_width, inter=cv2.INTER_LINEAR)
 
         if len(pending) < threadn and frame_number == frames_between_detection:
             task = pool.apply_async(second_process, (frame.copy(), frame_number))
