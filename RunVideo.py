@@ -126,7 +126,7 @@ def match_two_templates(image, start, end, circle, cross):
             crop = image[coords[1][x]:coords[1][x+1], coords[0][y]:coords[0][y+1]].copy()
             cv2.imshow('crop', crop)
             cv2.waitKey(0)
-            canny = cv2.Canny(crop, 100, 200)
+            canny = cv2.Canny(crop, 80, 200)
             cr = cv2.matchTemplate(canny, cross,  cv2.TM_CCOEFF)
             ci = cv2.matchTemplate(canny, circle,  cv2.TM_CCOEFF)
             (_, maxCrossVal, _, _) = cv2.minMaxLoc(cr)
@@ -160,9 +160,9 @@ def get_nine_images(image, start, end):
     return nine_images
 
 
-def second_process(f_gray, changes, f_template, array, f_templates, interpolations, f_tresh):
+def second_process(f_gray, changes, f_template, array, f_templates, interpolations):
     match = get_matched_coordinates(f_gray, f_template, interpolations)
-    if match[0] > f_tresh:
+    if match[0] > template_threshold:
         (_, maxLoc0, maxLoc1, r) = match
         startxy = (int(maxLoc0 * r), int(maxLoc1 * r))
         endxy = (int((maxLoc0 + f_template.shape[1]) * r), int((maxLoc1 + f_template.shape[0]) * r))
@@ -191,7 +191,7 @@ def show_frame(f_frame):
 
 if __name__ == '__main__':
 
-    frames_between_detection = 10
+    frames_between_detection = 30
     match_template_interpolations = 20
     threshold = 3000000.0
 
@@ -224,10 +224,10 @@ if __name__ == '__main__':
         if frame_number == frames_between_detection:
             frame_number = 0
             gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-            p = Process(target=second_process,
-                        args=(gray, change_on_frame, main_template, matched_place,
-                              templates, match_template_interpolations, ))
-            p.start()
+            proc = Process(target=second_process,
+                           args=(gray, change_on_frame, main_template,
+                                 matched_place, templates, match_template_interpolations, ))
+            proc.start()
 
         if change_on_frame != 0:
             matched_place_copy = []
