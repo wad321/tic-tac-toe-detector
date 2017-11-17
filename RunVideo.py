@@ -9,21 +9,34 @@ from collections import deque
 
 
 def load_samples_and_labels(samples_path, features):
-    images = []
-    labels = []
+    f_images = []
+    f_labels = []
     feature_number = 0
     for sample_path in samples_path:
         for sample in glob.glob(sample_path):
-            images.append(open_and_process_image(sample))
-            labels.append(features[feature_number])
+            f_images.append(open_and_process_image(sample))
+            f_labels.append(features[feature_number])
         feature_number += 1
 
-    return images, labels
+    return f_images, f_labels
 
 
 def open_and_process_image(filename):
     image_to_process = cv2.imread(filename, cv2.IMREAD_UNCHANGED)
     return process_frame(image_to_process, True)
+
+
+def predict(svn, prediction):
+    array = []
+    for obj in svn.predict(prediction):
+        array.append(obj)
+    return array
+
+
+def initialize_svn(samples, features, c, gamma):
+    svc = svm.SVC(kernel='rbf', C=c, cache_size=1000)
+    svc.fit(samples, features)
+    return svc
 
 
 def process_frame(f_frame, changetograyscale):
@@ -84,7 +97,6 @@ def get_matched_coordinates(image, template, interpolations):
         place = i * 4
         if found is None or shared_array[place] > found[0]:
             found = (shared_array[place], shared_array[place + 1], shared_array[place + 2], shared_array[place + 3])
-
     return found
 
 
@@ -93,9 +105,9 @@ def prepare_template_from_image(image, width):
     if image.shape[0] != image.shape[1]:
         image = crop_middle_square(image)
     f_gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-    f_template = cv2.Canny(f_gray, 100, 200)
-    # cv2.imshow('template', template)
-    # cv2.waitKey(0)
+    f_template = cv2.Canny(f_gray, 100, 150)
+    cv2.imshow('template', f_template)
+    cv2.waitKey(0)
     return f_template
 
 
@@ -111,7 +123,7 @@ def crop_middle_square(image):
     return image
 
 
-def match_two_templates(image, start, end, circle, cross):
+def match_two_templates(image, start, end, templates):
     array = []
     coords = np.zeros((2, 4))
     image = cv2.cvtColor(image, cv2.COLOR_RGB2GRAY)
@@ -125,10 +137,10 @@ def match_two_templates(image, start, end, circle, cross):
             cv2.imshow('crop', crop)
             cv2.waitKey(0)
             canny = cv2.Canny(crop, 80, 200)
-            cr = cv2.matchTemplate(canny, cross,  cv2.TM_CCOEFF)
-            ci = cv2.matchTemplate(canny, circle,  cv2.TM_CCOEFF)
-            (_, maxCrossVal, _, _) = cv2.minMaxLoc(cr)
-            (_, maxCircleVal, _, _) = cv2.minMaxLoc(ci)
+            cross = cv2.matchTemplate(canny, templates[0],  cv2.TM_CCOEFF)
+            circle = cv2.matchTemplate(canny, templates[1],  cv2.TM_CCOEFF)
+            (_, maxCrossVal, _, _) = cv2.minMaxLoc(cross)
+            (_, maxCircleVal, _, _) = cv2.minMaxLoc(circle)
 
             if maxCrossVal < template_threshold and maxCircleVal < template_threshold:
                 array.append(0)
@@ -167,41 +179,39 @@ def second_process(f_frame, number):
         startxy = (int(maxLoc0 * r), int(maxLoc1 * r))
         endxy = (int((maxLoc0 + f_template.shape[1]) * r), int((maxLoc1 + f_template.shape[0]) * r))
 
-        # if svn_format:
-        #    nine_images = get_nine_images(f_gray, startxy, endxy)
-        # else:
-        #    match_two_templates()
-        cv2.rectangle(f_frame, startxy, endxy, (0, 0, 255), 2)
+        if svn_format:
+            nine_images = get_nine_images(f_gray, startxy, endxy)
+            places = predict(svn_machine, nine_images)
+        else:
+            places = match_two_templates(f_gray, startxy, endxy, (cross_template, circle_template))
+
         place_to_draw = [startxy, endxy]
     else:
         place_to_draw = [(-1, -1), (-1, -1)]
 
-    return f_gray, place_to_draw
+    return place_to_draw
 
 
 size = 64, 64
 svn_format = False
-template_threshold = 3200000.0
-frames_between_detection = 10
-match_template_interpolations = 20
+template_size = 128
+template_threshold = 15000000.0
+secondary_threshold = 20000000.0
+frames_between_detection = 140
+match_template_interpolations = 15
 
-img = cv2.imread("template1v2.jpg", cv2.IMREAD_COLOR)
-main_template = prepare_template_from_image(img, 256)
+img = cv2.imread("templates/template1v2.jpg", cv2.IMREAD_COLOR)
+main_template = prepare_template_from_image(img, template_size)
+
+if svn_format:
+    images, labels = load_samples_and_labels(["kolka/*.jpg", "krzyzyki/*.jpg", "puste/*.jpg"], [1, -1, 0])
+    svn_machine = initialize_svn(images, labels, 1, 0.02)
+else:
+    circle_template = prepare_template_from_image(cv2.imread("templates/circle_template.jpg", cv2.IMREAD_COLOR), 64)
+    cross_template = prepare_template_from_image(cv2.imread("templates/cross_template.jpg", cv2.IMREAD_COLOR), 64)
 
 
 if __name__ == '__main__':
-    if svn_format:
-        images, labels = load_samples_and_labels(["kolka/*.jpg", "krzyzyki/*.jpg", "puste/*.jpg"], [1, -1, 0])
-
-    cross = cv2.imread("template1v2.jpg", cv2.IMREAD_COLOR)
-    circle = cv2.imread("template1v2.jpg", cv2.IMREAD_COLOR)
-    templates = [prepare_template_from_image(cross, 64), prepare_template_from_image(circle, 64)]
-
-    matched_place = Array('d', np.zeros((4, 1)))
-
-    change_on_frame = Value('i', lock=True)
-    change_on_frame = 0
-
     frame_number = 0
 
     where_draw = [(-1, -1), (-1, -1)]
@@ -215,13 +225,12 @@ if __name__ == '__main__':
     pool = ThreadPool(processes=threadn)
     pending = deque()
 
+    process_finished = False
+
     # MAIN EVENT TIME!
     while cap.isOpened():
         while len(pending) > 0 and pending[0].ready():
-
-            res, where_draw = pending.popleft().get()
-            cv2.imshow('tic-tac-toe', res)
-            cv2.waitKey(30)
+            where_draw = pending.popleft().get()
 
         ret, frame = cap.read()
 
@@ -235,11 +244,13 @@ if __name__ == '__main__':
             cv2.imshow('tic-tac-toe', frame)
         else:
             cv2.imshow('tic-tac-toe', frame)
+
         ch = 0xFF & cv2.waitKey(30)
+
         if ch == ord('q') or ch == 27:
             break
 
-        if frame_number > 10:
+        if frame_number > frames_between_detection:
             frame_number = 0
         else:
             frame_number += 1
