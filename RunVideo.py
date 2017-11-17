@@ -181,8 +181,8 @@ def second_process(f_frame, number):
 
 size = 64, 64
 svn_format = False
-template_threshold = 3000000.0
-frames_between_detection = 30
+template_threshold = 3200000.0
+frames_between_detection = 20
 match_template_interpolations = 20
 
 img = cv2.imread("template1v2.jpg", cv2.IMREAD_COLOR)
@@ -217,24 +217,26 @@ if __name__ == '__main__':
 
     # MAIN EVENT TIME!
     while cap.isOpened():
-
+        print(len(pending))
         while len(pending) > 0 and pending[0].ready():
+
             res, where_draw = pending.popleft().get()
             cv2.imshow('tic-tac-toe', res)
-            cv2.waitKey(20)
-        if len(pending) < threadn and frame_number == frames_between_detection:
-            ret, frame = cap.read()
+            cv2.waitKey(30)
+
+        ret, frame = cap.read()
+
+        if len(pending) < threadn:
             task = pool.apply_async(second_process, (frame.copy(), frame_number))
             pending.append(task)
             frame_number = 0
 
-        ret, frame = cap.read()
         if where_draw[0][0] > 0:
             cv2.rectangle(frame, where_draw[0], where_draw[1], (0, 0, 255), 2)
             cv2.imshow('tic-tac-toe', frame)
         else:
             cv2.imshow('tic-tac-toe', frame)
-        ch = 0xFF & cv2.waitKey(20)
+        ch = 0xFF & cv2.waitKey(30)
         if ch == ord('q') or ch == 27:
             break
 
