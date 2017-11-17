@@ -165,7 +165,7 @@ def second_process(f_gray, changes, f_template, array, f_templates, interpolatio
     if match[0] > f_tresh:
         (_, maxLoc0, maxLoc1, r) = match
         startxy = (int(maxLoc0 * r), int(maxLoc1 * r))
-        endxy = (int((maxLoc0 + template.shape[1]) * r), int((maxLoc1 + template.shape[0]) * r))
+        endxy = (int((maxLoc0 + f_template.shape[1]) * r), int((maxLoc1 + f_template.shape[0]) * r))
 
         #if svn_format:
         #    nine_images = get_nine_images(f_gray, startxy, endxy)
