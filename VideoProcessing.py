@@ -5,7 +5,6 @@ from sklearn.externals import joblib
 import cv2
 import glob
 import imutils
-from PIL import Image
 
 size = 64, 64
 
@@ -87,6 +86,7 @@ def child_match_template(resized, template, ratio, interpolation, output_array):
     output_array[interpolation * 4 + 1] = maxLoc[0]
     output_array[interpolation * 4 + 2] = maxLoc[1]
     output_array[interpolation * 4 + 3] = ratio
+    print(interpolation, maxVal)
     return 0
 
 
@@ -173,8 +173,8 @@ def match_two_templates(image, start, end, circle, cross, threshold):
     for y in range(3):
         for x in range(3):
             crop = image[coords[1][x]:coords[1][x+1], coords[0][y]:coords[0][y+1]].copy()
-            cv2.imshow('crop', crop)
-            cv2.waitKey(0)
+            #cv2.imshow('crop', crop)
+            #cv2.waitKey(0)
             canny = cv2.Canny(crop, 100, 200)
             cr = cv2.matchTemplate(canny, cross)
             ci = cv2.matchTemplate(canny, circle)
@@ -195,7 +195,6 @@ if __name__ == '__main__':
 
     pred = []
     img = cv2.imread("template1v2.jpg", cv2.IMREAD_COLOR)
-    img2 = img.flatten()
     testimage = cv2.imread("plearn/2.jpg", cv2.IMREAD_COLOR)
     testimage = imutils.resize(testimage, width=800)
     template = prepare_template_from_image(img, 256)
