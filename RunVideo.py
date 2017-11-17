@@ -182,7 +182,7 @@ def second_process(f_frame, number):
 size = 64, 64
 svn_format = False
 template_threshold = 3200000.0
-frames_between_detection = 20
+frames_between_detection = 10
 match_template_interpolations = 20
 
 img = cv2.imread("template1v2.jpg", cv2.IMREAD_COLOR)
@@ -206,7 +206,7 @@ if __name__ == '__main__':
 
     where_draw = [(-1, -1), (-1, -1)]
 
-    cap = cv2.VideoCapture(0)
+    cap = cv2.VideoCapture("saint.mp4")
     if not cap.isOpened():
         print("is not opened")
         cv2.VideoCapture.open()
@@ -217,7 +217,6 @@ if __name__ == '__main__':
 
     # MAIN EVENT TIME!
     while cap.isOpened():
-        print(len(pending))
         while len(pending) > 0 and pending[0].ready():
 
             res, where_draw = pending.popleft().get()
@@ -226,7 +225,7 @@ if __name__ == '__main__':
 
         ret, frame = cap.read()
 
-        if len(pending) < threadn:
+        if len(pending) < threadn and frame_number == frames_between_detection:
             task = pool.apply_async(second_process, (frame.copy(), frame_number))
             pending.append(task)
             frame_number = 0
@@ -240,7 +239,10 @@ if __name__ == '__main__':
         if ch == ord('q') or ch == 27:
             break
 
-        frame_number += 1
+        if frame_number > 10:
+            frame_number = 0
+        else:
+            frame_number += 1
 
     cap.release()
     cv2.destroyAllWindows()
