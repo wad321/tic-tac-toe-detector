@@ -5,7 +5,6 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="14532e27-ff42-4dde-b87d-0547ec1a4668" name="Default" comment="">
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/RunVideo.py" afterPath="$PROJECT_DIR$/RunVideo.py" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -20,9 +19,11 @@
       <file leaf-file-name="RunVideo.py" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/RunVideo.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="2093">
-              <caret line="182" column="35" lean-forward="false" selection-start-line="182" selection-start-column="35" selection-end-line="182" selection-end-column="35" />
-              <folding />
+            <state relative-caret-position="404">
+              <caret line="205" column="0" lean-forward="true" selection-start-line="205" selection-start-column="0" selection-end-line="205" selection-end-column="0" />
+              <folding>
+                <element signature="e#0#49#0" expanded="true" />
+              </folding>
             </state>
           </provider>
         </entry>
@@ -30,7 +31,7 @@
       <file leaf-file-name="VideoProcessing.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/VideoProcessing.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="1892">
+            <state relative-caret-position="455">
               <caret line="217" column="42" lean-forward="false" selection-start-line="217" selection-start-column="42" selection-end-line="217" selection-end-column="42" />
               <folding>
                 <element signature="e#0#42#0" expanded="true" />
@@ -84,8 +85,8 @@
     </option>
   </component>
   <component name="ProjectFrameBounds" extendedState="6">
-    <option name="x" value="104" />
-    <option name="y" value="79" />
+    <option name="x" value="2" />
+    <option name="y" value="4" />
     <option name="width" value="1237" />
     <option name="height" value="788" />
   </component>
@@ -126,14 +127,14 @@
     <property name="SearchEverywhereHistoryKey" value="&#9;FILE&#9;file://D:/MojeProjekty/PyCharm/VideoReader/VideoProcessing.py" />
   </component>
   <component name="RecentsManager">
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="D:\MojeProjekty\PyCharm\VideoReader" />
+    </key>
     <key name="MoveFile.RECENT_KEYS">
       <recent name="D:\MojeProjekty\PyCharm\VideoReader" />
       <recent name="D:\MojeProjekty\PyCharm\VideoReader\krzyzyki" />
       <recent name="D:\MojeProjekty\PyCharm\VideoReader\pnotlearn" />
       <recent name="D:\MojeProjekty\PyCharm\VideoReader\plearn" />
-    </key>
-    <key name="CopyFile.RECENT_KEYS">
-      <recent name="D:\MojeProjekty\PyCharm\VideoReader" />
     </key>
   </component>
   <component name="RunDashboard">
@@ -148,7 +149,7 @@
       </list>
     </option>
   </component>
-  <component name="RunManager" selected="Python.VideoProcessing">
+  <component name="RunManager" selected="Python.RunVideo">
     <configuration name="MakeImagesSmaller" type="PythonConfigurationType" factoryName="Python" temporary="true">
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
@@ -162,6 +163,23 @@
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <module name="VideoReader" />
       <option name="SCRIPT_NAME" value="$PROJECT_DIR$/MakeImagesSmaller.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+    </configuration>
+    <configuration name="RunVideo" type="PythonConfigurationType" factoryName="Python" temporary="true">
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <module name="VideoReader" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/RunVideo.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -183,14 +201,16 @@
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
     </configuration>
-    <list size="2">
+    <list size="3">
       <item index="0" class="java.lang.String" itemvalue="Python.VideoProcessing" />
       <item index="1" class="java.lang.String" itemvalue="Python.MakeImagesSmaller" />
+      <item index="2" class="java.lang.String" itemvalue="Python.RunVideo" />
     </list>
     <recent_temporary>
-      <list size="2">
-        <item index="0" class="java.lang.String" itemvalue="Python.VideoProcessing" />
-        <item index="1" class="java.lang.String" itemvalue="Python.MakeImagesSmaller" />
+      <list size="3">
+        <item index="0" class="java.lang.String" itemvalue="Python.RunVideo" />
+        <item index="1" class="java.lang.String" itemvalue="Python.VideoProcessing" />
+        <item index="2" class="java.lang.String" itemvalue="Python.MakeImagesSmaller" />
       </list>
     </recent_temporary>
   </component>
@@ -231,7 +251,7 @@
       <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.1380597" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32936078" sideWeight="0.49479166" order="6" side_tool="false" content_ui="tabs" />
       <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32980973" sideWeight="0.50208336" order="7" side_tool="true" content_ui="tabs" />
-      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.248104" sideWeight="0.4938575" order="2" side_tool="false" content_ui="tabs" />
+      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.17551462" sideWeight="0.4938575" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32936078" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Python Console" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32936078" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
@@ -284,7 +304,7 @@
           <option name="timeStamp" value="25" />
         </line-breakpoint>
       </breakpoints>
-      <option name="time" value="26" />
+      <option name="time" value="27" />
     </breakpoint-manager>
     <watches-manager>
       <configuration name="PythonConfigurationType">
@@ -532,7 +552,7 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/VideoProcessing.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1892">
+        <state relative-caret-position="455">
           <caret line="217" column="42" lean-forward="false" selection-start-line="217" selection-start-column="42" selection-end-line="217" selection-end-column="42" />
           <folding>
             <element signature="e#0#42#0" expanded="true" />
@@ -542,9 +562,11 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/RunVideo.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="2093">
-          <caret line="182" column="35" lean-forward="false" selection-start-line="182" selection-start-column="35" selection-end-line="182" selection-end-column="35" />
-          <folding />
+        <state relative-caret-position="404">
+          <caret line="205" column="0" lean-forward="true" selection-start-line="205" selection-start-column="0" selection-end-line="205" selection-end-column="0" />
+          <folding>
+            <element signature="e#0#49#0" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>

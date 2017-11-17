@@ -1,13 +1,11 @@
 from multiprocessing import Process, Array, Value
+from multiprocessing.pool import ThreadPool
 import numpy as np
-from sklearn import svm, preprocessing, feature_extraction
+from sklearn import svm, preprocessing
 import cv2
 import glob
 import imutils
-
-size = 64, 64
-svn_format = False
-template_threshold = 3000000.0
+from collections import deque
 
 
 def load_samples_and_labels(samples_path, features):
@@ -160,58 +158,40 @@ def get_nine_images(image, start, end):
     return nine_images
 
 
-def second_process(camera, changes, f_template, array, f_templates, interpolations):
+def second_process(f_frame, number):
+    f_template = main_template.copy()
+    f_gray = cv2.cvtColor(f_frame, cv2.COLOR_RGB2GRAY)
+    match = get_matched_coordinates(f_gray, f_template, match_template_interpolations)
+    if match[0] > template_threshold:
+        (_, maxLoc0, maxLoc1, r) = match
+        startxy = (int(maxLoc0 * r), int(maxLoc1 * r))
+        endxy = (int((maxLoc0 + f_template.shape[1]) * r), int((maxLoc1 + f_template.shape[0]) * r))
 
-    frame_number = 0
+        # if svn_format:
+        #    nine_images = get_nine_images(f_gray, startxy, endxy)
+        # else:
+        #    match_two_templates()
+        cv2.rectangle(f_frame, startxy, endxy, (0, 0, 255), 2)
+        place_to_draw = [startxy, endxy]
+    else:
+        place_to_draw = [(-1, -1), (-1, -1)]
 
-    while camera.isOpened():
-        _, f_frame = camera.read()
-
-        f_gray = cv2.cvtColor(f_frame, cv2.COLOR_RGB2GRAY)
-
-        if frame_number == frames_between_detection:
-            frame_number = 0
-            match = get_matched_coordinates(f_gray, f_template, interpolations)
-            if match[0] > template_threshold:
-                (_, maxLoc0, maxLoc1, r) = match
-                startxy = (int(maxLoc0 * r), int(maxLoc1 * r))
-                endxy = (int((maxLoc0 + f_template.shape[1]) * r), int((maxLoc1 + f_template.shape[0]) * r))
-
-                #if svn_format:
-                #    nine_images = get_nine_images(f_gray, startxy, endxy)
-                #else:
-                #    match_two_templates()
-
-                array = [startxy[0], startxy[1], endxy[0], endxy[1]]
-                changes = 1
-            else:
-                changes = 0
-        else:
-            frame_number += 1
-
-    return 0
+    return f_gray, place_to_draw
 
 
-def change_frame(f_frame, f_coords):
-    cv2.rectangle(f_frame, (f_coords[0], f_coords[1]), (f_coords[2], f_coords[3]), (0, 0, 255), 2)
-    return f_frame
+size = 64, 64
+svn_format = False
+template_threshold = 3000000.0
+frames_between_detection = 30
+match_template_interpolations = 20
 
-
-def show_frame(f_frame):
-    cv2.imshow('Frame', f_frame)
-    return frame
+img = cv2.imread("template1v2.jpg", cv2.IMREAD_COLOR)
+main_template = prepare_template_from_image(img, 256)
 
 
 if __name__ == '__main__':
-
-    frames_between_detection = 30
-    match_template_interpolations = 20
-
     if svn_format:
         images, labels = load_samples_and_labels(["kolka/*.jpg", "krzyzyki/*.jpg", "puste/*.jpg"], [1, -1, 0])
-
-    img = cv2.imread("template1v2.jpg", cv2.IMREAD_COLOR)
-    main_template = prepare_template_from_image(img, 256)
 
     cross = cv2.imread("template1v2.jpg", cv2.IMREAD_COLOR)
     circle = cv2.imread("template1v2.jpg", cv2.IMREAD_COLOR)
@@ -222,29 +202,43 @@ if __name__ == '__main__':
     change_on_frame = Value('i', lock=True)
     change_on_frame = 0
 
+    frame_number = 0
+
+    where_draw = [(-1, -1), (-1, -1)]
+
     cap = cv2.VideoCapture(0)
     if not cap.isOpened():
         print("is not opened")
         cv2.VideoCapture.open()
 
-    proc = Process(target=second_process,
-                    args=(cap, change_on_frame, main_template,
-                    matched_place, templates, match_template_interpolations,))
-    proc.start()
+    threadn = cv2.getNumberOfCPUs()
+    pool = ThreadPool(processes=threadn)
+    pending = deque()
 
     # MAIN EVENT TIME!
     while cap.isOpened():
+
+        while len(pending) > 0 and pending[0].ready():
+            res, where_draw = pending.popleft().get()
+            cv2.imshow('tic-tac-toe', res)
+            cv2.waitKey(20)
+        if len(pending) < threadn and frame_number == frames_between_detection:
+            ret, frame = cap.read()
+            task = pool.apply_async(second_process, (frame.copy(), frame_number))
+            pending.append(task)
+            frame_number = 0
+
         ret, frame = cap.read()
-
-        if change_on_frame != 0:
-            matched_place_copy = []
-            matched_place_copy = matched_place
-            show_frame(change_frame(frame, matched_place_copy))
+        if where_draw[0][0] > 0:
+            cv2.rectangle(frame, where_draw[0], where_draw[1], (0, 0, 255), 2)
+            cv2.imshow('tic-tac-toe', frame)
         else:
-            show_frame(frame)
-
-        if cv2.waitKey(30) & 0xFF == ord('q'):
+            cv2.imshow('tic-tac-toe', frame)
+        ch = 0xFF & cv2.waitKey(20)
+        if ch == ord('q') or ch == 27:
             break
+
+        frame_number += 1
 
     cap.release()
     cv2.destroyAllWindows()
