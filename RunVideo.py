@@ -160,22 +160,35 @@ def get_nine_images(image, start, end):
     return nine_images
 
 
-def second_process(f_gray, changes, f_template, array, f_templates, interpolations):
-    match = get_matched_coordinates(f_gray, f_template, interpolations)
-    if match[0] > template_threshold:
-        (_, maxLoc0, maxLoc1, r) = match
-        startxy = (int(maxLoc0 * r), int(maxLoc1 * r))
-        endxy = (int((maxLoc0 + f_template.shape[1]) * r), int((maxLoc1 + f_template.shape[0]) * r))
+def second_process(camera, changes, f_template, array, f_templates, interpolations):
 
-        #if svn_format:
-        #    nine_images = get_nine_images(f_gray, startxy, endxy)
-        #else:
-        #    match_two_templates()
+    frame_number = 0
 
-        array = [startxy[0], startxy[1], endxy[0], endxy[1]]
-        changes = 1
-    else:
-        changes = 0
+    while camera.isOpened():
+        _, f_frame = camera.read()
+
+        f_gray = cv2.cvtColor(f_frame, cv2.COLOR_RGB2GRAY)
+
+        if frame_number == frames_between_detection:
+            frame_number = 0
+            match = get_matched_coordinates(f_gray, f_template, interpolations)
+            if match[0] > template_threshold:
+                (_, maxLoc0, maxLoc1, r) = match
+                startxy = (int(maxLoc0 * r), int(maxLoc1 * r))
+                endxy = (int((maxLoc0 + f_template.shape[1]) * r), int((maxLoc1 + f_template.shape[0]) * r))
+
+                #if svn_format:
+                #    nine_images = get_nine_images(f_gray, startxy, endxy)
+                #else:
+                #    match_two_templates()
+
+                array = [startxy[0], startxy[1], endxy[0], endxy[1]]
+                changes = 1
+            else:
+                changes = 0
+        else:
+            frame_number += 1
+
     return 0
 
 
@@ -193,7 +206,6 @@ if __name__ == '__main__':
 
     frames_between_detection = 30
     match_template_interpolations = 20
-    threshold = 3000000.0
 
     if svn_format:
         images, labels = load_samples_and_labels(["kolka/*.jpg", "krzyzyki/*.jpg", "puste/*.jpg"], [1, -1, 0])
@@ -210,24 +222,19 @@ if __name__ == '__main__':
     change_on_frame = Value('i', lock=True)
     change_on_frame = 0
 
-    frame_number = 0
-
     cap = cv2.VideoCapture(0)
     if not cap.isOpened():
         print("is not opened")
         cv2.VideoCapture.open()
 
+    proc = Process(target=second_process,
+                    args=(cap, change_on_frame, main_template,
+                    matched_place, templates, match_template_interpolations,))
+    proc.start()
+
     # MAIN EVENT TIME!
     while cap.isOpened():
         ret, frame = cap.read()
-
-        if frame_number == frames_between_detection:
-            frame_number = 0
-            gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-            proc = Process(target=second_process,
-                           args=(gray, change_on_frame, main_template,
-                                 matched_place, templates, match_template_interpolations, ))
-            proc.start()
 
         if change_on_frame != 0:
             matched_place_copy = []
@@ -238,8 +245,6 @@ if __name__ == '__main__':
 
         if cv2.waitKey(30) & 0xFF == ord('q'):
             break
-
-        frame_number += 1
 
     cap.release()
     cv2.destroyAllWindows()
