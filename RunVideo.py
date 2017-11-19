@@ -47,8 +47,8 @@ def process_frame(f_frame, changetograyscale):
         f_frame = cv2.cvtColor(f_frame, cv2.COLOR_RGB2GRAY)
 
     f_frame = cv2.Canny(f_frame, 80, 200)
-    cv2.imshow('image', f_frame)
-    cv2.waitKey(0)
+    # cv2.imshow('image', f_frame)
+    # cv2.waitKey(0)
 
     if svn_format:
         f_frame = f_frame.astype(np.float64)
@@ -170,39 +170,48 @@ def second_process(f_frame, number):
         startxy = (int(maxLoc0 * r), int(maxLoc1 * r))
         endxy = (int((maxLoc0 + f_template.shape[1]) * r), int((maxLoc1 + f_template.shape[0]) * r))
 
-        coords = np.zeros((2, 4))
-        for it in range(2):
-            coords[it] = [startxy[it], int((2 * startxy[it] + endxy[it]) / 3),
-                          int((startxy[it] + 2 * endxy[it]) / 3), endxy[it]]
-        coords = coords.astype(np.int)
+        place_to_draw = [startxy, endxy]
 
-        if svn_format:
-            nine_images = get_nine_images(f_gray, coords)
-            places = predict(svn_machine, nine_images)
-        else:
-            places = match_two_templates(f_gray, coords, (cross_template, circle_template))
+        if enable_cricle_cross_detection:
+            coords = np.zeros((2, 4))
+            for it in range(2):
+                coords[it] = [startxy[it], int((2 * startxy[it] + endxy[it]) / 3),
+                              int((startxy[it] + 2 * endxy[it]) / 3), endxy[it]]
+            coords = coords.astype(np.int)
 
-        to_add = []
-        for y in range(3):
-            for x in range(3):
-                to_add.append((places[x+y], (coords[0][y], coords[1][x]), (coords[0][y+1], coords[1][x+1])))
+            if svn_format:
+                nine_images = get_nine_images(f_gray, coords)
+                places = predict(svn_machine, nine_images)
+            else:
+                places = match_two_templates(f_gray, coords, (cross_template, circle_template))
 
-        place_to_draw = [startxy, endxy] + to_add
+            to_add = []
+            for y in range(3):
+                for x in range(3):
+                    to_add.append((places[x+y], (coords[0][y], coords[1][x]), (coords[0][y+1], coords[1][x+1])))
+
+            place_to_draw += to_add
+
     else:
         place_to_draw = [(-1, -1), (-1, -1)]
 
     return place_to_draw
 
 
-size = 32, 32
-svn_format = False
+# Main options
 template_size = 96
-circle_cross_size = 64
 video_size_width = 600
 template_threshold = 7500000.0
-secondary_threshold = 6000000.0
 frames_between_detection = 140
 match_template_interpolations = 15
+enable_cricle_cross_detection = False
+
+# Circle and cross detection options
+svn_format = False
+size = 32, 32
+circle_cross_size = 64
+secondary_threshold = 6000000.0
+
 
 img = cv2.imread("templates/template1v2.jpg", cv2.IMREAD_COLOR)
 main_template = prepare_template_from_image(img, template_size)
@@ -247,19 +256,21 @@ if __name__ == '__main__':
             frame_number = 0
 
         if where_draw[0][0] > 0:
-            for i in range(2, 11):
-                cv2.line(frame, line2[0], line2[1], (0, 255, 0), 2)
-                if where_draw[i][0] == -1:
-                    where_circle = (int((where_draw[i][1][0] + where_draw[i][2][0]) / 2),
-                                    int((where_draw[i][1][1] + where_draw[i][2][1]) / 2))
-                    radius = int(0.75 * (where_draw[i][2][0] - int((where_draw[i][1][0] + where_draw[i][2][0]) / 2)))
-                    cv2.circle(frame, where_circle, radius, (0, 255, 0), 2)
-                elif where_draw[i][0] == 1:
-                    line2 = ((where_draw[i][1][0] - 10, where_draw[i][2][1] + 10),
-                             (where_draw[i][1][1] + 10, where_draw[i][2][0] - 10))
-
-                    cv2.line(frame, where_draw[i][1], where_draw[i][2], (0, 255, 0), 2)
+            if enable_cricle_cross_detection:
+                for i in range(2, 11):
                     cv2.line(frame, line2[0], line2[1], (0, 255, 0), 2)
+                    if where_draw[i][0] == -1:
+                        where_circle = (int((where_draw[i][1][0] + where_draw[i][2][0]) / 2),
+                                        int((where_draw[i][1][1] + where_draw[i][2][1]) / 2))
+                        radius = int(0.75 * (where_draw[i][2][0] -
+                                             int((where_draw[i][1][0] + where_draw[i][2][0]) / 2)))
+                        cv2.circle(frame, where_circle, radius, (0, 255, 0), 2)
+                    elif where_draw[i][0] == 1:
+                        line2 = ((where_draw[i][1][0] - 10, where_draw[i][2][1] + 10),
+                                 (where_draw[i][1][1] + 10, where_draw[i][2][0] - 10))
+
+                        cv2.line(frame, where_draw[i][1], where_draw[i][2], (0, 255, 0), 2)
+                        cv2.line(frame, line2[0], line2[1], (0, 255, 0), 2)
 
             cv2.rectangle(frame, where_draw[0], where_draw[1], (0, 0, 255), 2)
             cv2.imshow('tic-tac-toe', frame)
